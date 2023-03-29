@@ -28,7 +28,7 @@
 
 /* constants/macros ----------------------------------------------------------*/
 
-#define NX (3 + NSYS) /* # of estimated parameters */
+#define NX (3 + NSYS+1) /* # of estimated parameters */
 
 #define MAXITR 10          /* max number of iteration for point pos */
 #define ERR_ION 5.0        /* ionospheric delay Std (m) */
@@ -252,7 +252,6 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs, const d
         if (isys < 0 || isys >= NSYS) {
             continue;
         }
-        dtr = x[3 + isys];
 
         /* reject duplicated observation data */
         if (i < n - 1 && i < MAXOBS - 1 && sat == obs[i + 1].sat) {
@@ -295,8 +294,7 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs, const d
         if ((P = prange(obs + i, nav, opt, &vmeas)) == 0.0)
             continue;
 
-        /* pseudorange residual */
-        v[nv] = P - (r + dtr - CLIGHT * dts[i * 2] + dion + dtrp);
+
 
         /* design matrix */
         for (j = 0; j < NX; j++) {
@@ -304,8 +302,17 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs, const d
         }
         /* time system offset and receiver bias correction */
         //fixed: a dtr for a system, not isb
-        H[isys + 3 + nv * NX] = 1.0;
-        mask[isys] = 1;
+        if (bds2or3(sat) == 2) {
+            H[NX - 1 + nv * NX] = 1.0;
+            mask[NX - 3 - 1]    = 1;
+            dtr = x[NX-1];
+        } else {
+            H[isys + 3 + nv * NX] = 1.0;
+            mask[isys]            = 1;
+            dtr = x[3 + isys];
+        }
+        /* pseudorange residual */
+        v[nv] = P - (r + dtr - CLIGHT * dts[i * 2] + dion + dtrp);
 
         vsat[i] = 1;
         resp[i] = v[nv];

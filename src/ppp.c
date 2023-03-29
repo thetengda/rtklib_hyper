@@ -655,7 +655,7 @@ static void udpos_ppp(rtk_t *rtk) {
 /* temporal update of clock --------------------------------------------------*/
 static void udclk_ppp(rtk_t *rtk) {
     double dtr;
-    int i;
+    int i,j;
 
     trace(3, "udclk_ppp:\n");
 
@@ -667,9 +667,12 @@ static void udclk_ppp(rtk_t *rtk) {
             // dtr = rtk->sol.dtr[0];
             // fixed: dtr are derived from spp for each system
             dtr = rtk->sol.dtr[i];
-            if(dtr==0){ // spp do not get dtr(i)
-                dtr = rtk->sol.dtr[0]; // use dtr(G) instead
-            }
+            // if(dtr==0){ // spp do not get dtr(i)
+            //     for(j=0;j<NSYS+1;++j){
+            //         if(rtk->sol.dtr[j]!=0)
+            //             dtr = rtk->sol.dtr[j]; // use dtr(G) instead
+            //     }
+            // }
         // } else {
         //     dtr = i == 0 ? rtk->sol.dtr[0] : rtk->sol.dtr[0] + rtk->sol.dtr[i];
         // }
